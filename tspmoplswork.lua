@@ -116,8 +116,8 @@ local function createColorPicker(parent, defaultColor, callback)
         BackgroundColor3 = BACKGROUND_COLOR,
         BorderSizePixel = 0,
         Visible = false,
-        ZIndex = 10,
-        Parent = parent
+        ZIndex = 20,
+        Parent = CoreGui
     })
     createRoundedCorner(ColorPickerGui, 6)
     createStroke(ColorPickerGui, Color3.fromRGB(50, 50, 50), 1, 0)
@@ -130,7 +130,7 @@ local function createColorPicker(parent, defaultColor, callback)
         TextColor3 = TEXT_COLOR,
         TextSize = 14,
         Font = Enum.Font.GothamSemibold,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = ColorPickerGui
     })
     
@@ -141,7 +141,7 @@ local function createColorPicker(parent, defaultColor, callback)
         Position = UDim2.new(0, 10, 0, 140),
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = ColorPickerGui
     })
     createRoundedCorner(HueFrame, 4)
@@ -165,7 +165,7 @@ local function createColorPicker(parent, defaultColor, callback)
         Size = UDim2.new(0, 4, 1, 0),
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0,
-        ZIndex = 11,
+        ZIndex = 21,
         Parent = HueFrame
     })
     createRoundedCorner(HueSelector, 2)
@@ -177,7 +177,7 @@ local function createColorPicker(parent, defaultColor, callback)
         Position = UDim2.new(0, 10, 0, 35),
         BackgroundColor3 = Color3.fromRGB(255, 0, 0),
         BorderSizePixel = 0,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = ColorPickerGui
     })
     createRoundedCorner(SVFrame, 4)
@@ -203,7 +203,7 @@ local function createColorPicker(parent, defaultColor, callback)
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
         BackgroundTransparency = 0,
         BorderSizePixel = 0,
-        ZIndex = 11,
+        ZIndex = 21,
         Parent = SVFrame
     })
     createRoundedCorner(ValueFrame, 4)
@@ -228,7 +228,7 @@ local function createColorPicker(parent, defaultColor, callback)
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0,
-        ZIndex = 12,
+        ZIndex = 22,
         Parent = SVFrame
     })
     createRoundedCorner(SVSelector, 10)
@@ -240,7 +240,7 @@ local function createColorPicker(parent, defaultColor, callback)
         Size = UDim2.new(1, -20, 0, 25),
         Position = UDim2.new(0, 10, 0, 170),
         BackgroundTransparency = 1,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = ColorPickerGui
     })
     
@@ -255,7 +255,7 @@ local function createColorPicker(parent, defaultColor, callback)
         TextSize = 12,
         Font = Enum.Font.Gotham,
         ClearTextOnFocus = false,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = RGBFrame
     })
     createRoundedCorner(RInput, 4)
@@ -271,7 +271,7 @@ local function createColorPicker(parent, defaultColor, callback)
         TextSize = 12,
         Font = Enum.Font.Gotham,
         ClearTextOnFocus = false,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = RGBFrame
     })
     createRoundedCorner(GInput, 4)
@@ -287,7 +287,7 @@ local function createColorPicker(parent, defaultColor, callback)
         TextSize = 12,
         Font = Enum.Font.Gotham,
         ClearTextOnFocus = false,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = RGBFrame
     })
     createRoundedCorner(BInput, 4)
@@ -303,7 +303,7 @@ local function createColorPicker(parent, defaultColor, callback)
         TextSize = 12,
         Font = Enum.Font.Gotham,
         ClearTextOnFocus = false,
-        ZIndex = 10,
+        ZIndex = 20,
         Parent = RGBFrame
     })
     createRoundedCorner(HexInput, 4)
@@ -967,6 +967,55 @@ function UILibrary:CreateWindow(title, keySystemOptions)
         Parent = SearchFrame
     })
     
+    local SearchInput = createInstance("TextBox", {
+        Name = "SearchInput",
+        Size = UDim2.new(1, -60, 1, 0),
+        Position = UDim2.new(0, 60, 0, 0),
+        BackgroundTransparency = 1,
+        Text = "",
+        PlaceholderText = "Search...",
+        TextColor3 = TEXT_COLOR,
+        PlaceholderColor3 = SECONDARY_TEXT_COLOR,
+        TextSize = 14,
+        Font = Enum.Font.Gotham,
+        ClearTextOnFocus = false,
+        Parent = SearchFrame
+    })
+    
+    -- Add search functionality
+    SearchInput.Changed:Connect(function(prop)
+        if prop == "Text" then
+            local searchText = string.lower(SearchInput.Text)
+            
+            -- Search through all UI elements
+            for _, tab in pairs(Tabs) do
+                local tabContent = tab.Content
+                
+                for _, section in ipairs(tabContent:GetChildren()) do
+                    if section:IsA("Frame") and section.Name:match("Section$") then
+                        local sectionContent = section:FindFirstChild("Content")
+                        
+                        if sectionContent then
+                            for _, element in ipairs(sectionContent:GetChildren()) do
+                                if element:IsA("Frame") then
+                                    local label = element:FindFirstChild("Label")
+                                    
+                                    if label and label:IsA("TextLabel") then
+                                        if searchText == "" then
+                                            element.Visible = true
+                                        else
+                                            element.Visible = string.find(string.lower(label.Text), searchText) ~= nil
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+    
     -- Create content container
     local ContentContainer = createInstance("Frame", {
         Name = "ContentContainer",
@@ -1316,8 +1365,8 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                 
                 local SliderValue = createInstance("TextLabel", {
                     Name = "Value",
-                    Size = UDim2.new(0, 60, 0, 20),
-                    Position = UDim2.new(1, -60, 0, 0),
+                    Size = UDim2.new(0, 40, 0, 20),
+                    Position = UDim2.new(1, -40, 0, 0),
                     BackgroundTransparency = 1,
                     Text = tostring(default),
                     TextColor3 = SECONDARY_TEXT_COLOR,
@@ -1471,7 +1520,6 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                 })
                 createRoundedCorner(DropdownButton, 4)
                 createStroke(DropdownButton, Color3.fromRGB(50, 50, 50), 1, 0)
-                createStroke(DropdownButton, Color3.fromRGB(50, 50, 50), 1, 0)
                 
                 local DropdownText = createInstance("TextLabel", {
                     Name = "Text",
@@ -1503,7 +1551,7 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                     BackgroundColor3 = DROPDOWN_BACKGROUND,
                     ClipsDescendants = true,
                     Visible = false,
-                    ZIndex = 5,
+                    ZIndex = 10,
                     Parent = DropdownButton
                 })
                 createRoundedCorner(DropdownMenu, 4)
@@ -1515,7 +1563,7 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                     BackgroundTransparency = 1,
                     ScrollBarThickness = 2,
                     ScrollBarImageColor3 = SECONDARY_TEXT_COLOR,
-                    ZIndex = 5,
+                    ZIndex = 10,
                     Parent = DropdownMenu
                 })
                 
@@ -1565,7 +1613,7 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                         TextColor3 = item == selectedItem and ACCENT_COLOR or SECONDARY_TEXT_COLOR,
                         TextSize = 14,
                         Font = Enum.Font.Gotham,
-                        ZIndex = 5,
+                        ZIndex = 10,
                         Parent = DropdownList
                     })
                     
@@ -1677,7 +1725,7 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                                 TextColor3 = item == selectedItem and ACCENT_COLOR or SECONDARY_TEXT_COLOR,
                                 TextSize = 14,
                                 Font = Enum.Font.Gotham,
-                                ZIndex = 5,
+                                ZIndex = 10,
                                 Parent = DropdownList
                             })
                             
@@ -1828,8 +1876,8 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                 
                 local ColorDisplay = createInstance("TextButton", {
                     Name = "Display",
-                    Size = UDim2.new(0, 30, 0, 30),
-                    Position = UDim2.new(1, -40, 0, 0),
+                    Size = UDim2.new(0, 24, 0, 24),
+                    Position = UDim2.new(1, -30, 0, 0),
                     BackgroundColor3 = defaultColor or Color3.fromRGB(255, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
@@ -1856,6 +1904,11 @@ function UILibrary:CreateWindow(title, keySystemOptions)
                 -- Show/hide color picker on click
                 ColorDisplay.MouseButton1Click:Connect(function()
                     colorPickerInstance.Gui.Visible = not colorPickerInstance.Gui.Visible
+                    
+                    -- Position the color picker properly
+                    if colorPickerInstance.Gui.Visible then
+                        colorPickerInstance.Gui.Position = UDim2.new(0, ColorDisplay.AbsolutePosition.X + ColorDisplay.AbsoluteSize.X + 10, 0, ColorDisplay.AbsolutePosition.Y)
+                    end
                 end)
                 
                 -- Register UI element for config saving
